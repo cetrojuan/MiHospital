@@ -1,8 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
-import StartScreen from './src/components/screens/StartScreen';
-import LoginScreen from './src/components/screens/LoginScreen';
-import RegisterScreen from './src/components/screens/RegisterScreen';
+import StartScreen from './src//screens/StartScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
+import HomePacienteScreen from './src/screens/HomePacienteScreen';
+import HomeMedicoScreen from './src/screens/HomeMedicoScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from './src/types/navigation';
@@ -14,8 +16,10 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Home">
           <Stack.Screen name="Home" component={StartScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Login" component={LoginScreen} options={{ headerStyle: {backgroundColor: '#004aad'}, headerTintColor: '#ffffff', }}/>
+          <Stack.Screen name="Login" component={LoginScreen} options={{ headerStyle: {backgroundColor: '#004aad'}, headerTintColor: '#ffffff' }}/>
           <Stack.Screen name="Register" component={RegisterScreen} options={{ headerStyle: {backgroundColor: '#004aad'}, headerTintColor: '#ffffff'}}/>
+          <Stack.Screen name="HomePaciente" component={HomePacienteScreen} options={{ headerShown: false }} />  
+          <Stack.Screen name="HomeMedico" component={HomeMedicoScreen} options={{ headerShown: false }} />      
         </Stack.Navigator>
       </NavigationContainer>
   );

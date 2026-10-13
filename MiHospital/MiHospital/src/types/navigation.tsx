@@ -4,4 +4,12 @@ export type RootStackParamList = {
   Login: {
     rol: 'Paciente' | 'Medico';
   };
+  HomePaciente: {
+    nombre: string,
+    rol: 'Paciente',
+  };
+  HomeMedico:{
+    nombre: string;
+    rol: 'Medico';
+  };
 };
