@@ -2,19 +2,20 @@ import React, { useState }  from 'react';
 import { StyleSheet, Text, View, Button, Image, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { RootTabParamList } from '../../navigation/pacienteTabNavigator';
+import { PacienteRootTabParamList } from '../../navigation/pacienteTabNavigator';
 import Credencial from '../../components/Credencial';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type Props = BottomTabScreenProps<RootTabParamList, 'Inicio'>;
+type Props = BottomTabScreenProps<PacienteRootTabParamList, 'Inicio'>;
 
 const InicioPacienteScreen: React.FC<Props> = ({ route }) => {
   const { nombre }  = route.params;
+  const { dni } = route.params;
   return(
     <ScrollView>
       <View style={styles.container}>
-        <Text style={styles.bienvenido}>¡Bienvenido {nombre}!</Text>
-        <Credencial nombre={nombre}/>
+        <Text style={styles.bienvenido}>¡Bienvenido {nombre}! 👋</Text>
+        <Credencial nombre={nombre} dni={dni}/>
         <View style={styles.turnosContainer}>
           <Text style={{fontSize:30}}>Proximos Turnos:</Text>
           <Text style={{color: '#004aad', fontSize:30}}>10 de Octubre</Text>

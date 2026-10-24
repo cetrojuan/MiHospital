@@ -70,12 +70,12 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
       if (Rol === 'paciente') {
         navigation.reset({
           index: 0,
-          routes: [{name: 'HomePaciente',params: {nombre: usuarioEncontrado.nombre, rol: 'Paciente'}}]
+          routes: [{name: 'HomePaciente',params: {nombre: usuarioEncontrado.nombre, dni: usuarioEncontrado.id, rol: 'Paciente'}}]
         });
       } else if (Rol === 'medico') {
         navigation.reset({
           index: 0,
-          routes: [{name: 'HomeMedico',params: {nombre: usuarioEncontrado.nombre,rol: 'Medico'}}]
+          routes: [{name: 'HomeMedico',params: {nombre: usuarioEncontrado.nombre, dni: usuarioEncontrado.id ,rol: 'Medico'}}]
         });
       }
 

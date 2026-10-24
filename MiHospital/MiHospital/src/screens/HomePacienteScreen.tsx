@@ -9,12 +9,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import InicioScreen from '../screens/Paciente/InicioPacienteScreen'
 import TurnosScreen from '../screens/Paciente/TurnosPacienteScreen'
 import ConfiguracionScreen from '../screens/Paciente/ConfigPacienteScreen'
-import { RootTabParamList } from '../navigation/pacienteTabNavigator';
+import { PacienteRootTabParamList } from '../navigation/pacienteTabNavigator';
 import { RootStackParamList } from '../types/navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type HomePacienteRouteProp = RouteProp<RootStackParamList, 'HomePaciente'>;
-const Tab = createBottomTabNavigator<RootTabParamList>();
+const Tab = createBottomTabNavigator<PacienteRootTabParamList>();
 
 type Props = {
   route: HomePacienteRouteProp; 
@@ -22,6 +22,7 @@ type Props = {
 
 const HomePacienteScreen: React.FC<Props> = ({ route }) => {
   const { nombre }  = route.params;
+  const { dni } = route.params;
   return(
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -37,7 +38,7 @@ const HomePacienteScreen: React.FC<Props> = ({ route }) => {
               iconName = 'home-outline';
               break;
             case 'Turnos':
-              iconName = 'person-outline';
+              iconName = 'calendar-outline';
               break;
             case 'Configuracion':
               iconName = 'settings-outline';
@@ -49,9 +50,9 @@ const HomePacienteScreen: React.FC<Props> = ({ route }) => {
         },
       })}
     >
-      <Tab.Screen name="Inicio" component={InicioScreen} initialParams={{ nombre }}/>
-      <Tab.Screen name="Turnos" component={TurnosScreen} initialParams={{ nombre }}/>
-      <Tab.Screen name="Configuracion" component={ConfiguracionScreen} initialParams={{ nombre }}/>
+      <Tab.Screen name="Inicio" component={InicioScreen} initialParams={{ nombre, dni }}/>
+      <Tab.Screen name="Turnos" component={TurnosScreen} initialParams={{ nombre, dni }}/>
+      <Tab.Screen name="Configuracion" component={ConfiguracionScreen} initialParams={{ nombre, dni }}/>
     </Tab.Navigator>
   );
 };

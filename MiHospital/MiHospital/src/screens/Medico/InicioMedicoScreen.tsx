@@ -6,14 +6,10 @@ import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { MedicoRootTabParamList } from '../../navigation/medicoTabNavigator';
 
-type HomeMedicoRouteProp = RouteProp<RootStackParamList, 'HomeMedico'>;
-type HomeMedicoNavProp = NativeStackNavigationProp<RootStackParamList, 'HomeMedico'>;
-
-type Props = {
-  route: HomeMedicoRouteProp;
-  navigation: HomeMedicoNavProp;
-};
+type Props = BottomTabScreenProps<MedicoRootTabParamList, 'Inicio'>;
 
 const HomeMedicoScreen: React.FC<Props> = ({ route, navigation }) => {
   return(

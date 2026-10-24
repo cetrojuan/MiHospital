@@ -3,22 +3,59 @@ import { StyleSheet, Text, View, Button, Image, TouchableOpacity, TextInput, Ale
 import { Picker } from '@react-native-picker/picker'
 import { useState } from "react";
 import { Ionicons } from '@expo/vector-icons';
+import { Dropdown } from 'react-native-element-dropdown';
 import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RegisterScreen: React.FC = () => {
+  const especialidades = [
+    { label: 'Cardiología', value: 'Cardiología' },
+    { label: 'Cirugía general', value: 'Cirugía general' },
+    { label: 'Clínica médica', value: 'Clínica médica' },
+    { label: 'Dermatología', value: 'Dermatología' },
+    { label: 'Gastroenterología', value: 'Gastroenterología' },
+    { label: 'Ginecología', value: 'Ginecología' },
+    { label: 'Neurología', value: 'Neurología' },
+    { label: 'Oftalmología', value: 'Oftalmología' },
+    { label: 'Otorrinolaringología', value: 'Otorrinolaringología' },
+    { label: 'Pediatría', value: 'Pediatría' },
+    { label: 'Psicología', value: 'Psicología' },
+    { label: 'Psiquiatría', value: 'Psiquiatría' },
+    { label: 'Traumatología', value: 'Traumatología' },
+    { label: 'Urología', value: 'Urología' },
+  ];
+  
   const [nombre, setNombre] = useState(""); 
   const [contraseña, setContraseña] = useState("");
+  const [dni, setDni] = useState("");
   const [email, setEmail] = useState("");
   const [tipo, setTipo] = useState('Paciente')
-  const puedeEnviar = nombre.trim() !== "" && contraseña.trim() !== "" && email.trim() !== "";
+  const [especialidad, setEspecialidad] = useState("");
+  const [matricula, setMatricula] = useState("");
+  const puedeEnviar = 
+    nombre.trim() !== '' && 
+    dni.trim() !== '' && 
+    contraseña.trim() !== '' && 
+    email.trim() !== '' &&
+    (
+      tipo !== 'Medico' ||
+      (
+        especialidad.trim() !== '' &&
+        matricula.trim() !== ''
+      )
+    );
 
   const registrarUsuario = async () => {
     try {
-      if (!nombre.trim() || !email.trim() || !contraseña.trim()) {
+      if (!nombre.trim() || !dni.trim() || !email.trim() || !contraseña.trim()) {
         Alert.alert('Error', 'Completá todos los campos.');
+        return;
+      }
+
+      if (tipo === 'Medico' && (!especialidad.trim() || !matricula.trim())) {
+        Alert.alert('Error','Completá la especialidad y la matrícula profesional.');
         return;
       }
 
@@ -43,11 +80,13 @@ const RegisterScreen: React.FC = () => {
 
       // Crear el nuevo usuario
       const nuevoUsuario = {
-        id: Date.now().toString(),
+        id: dni.trim(),
         nombre: nombre.trim(),
         email: emailNormalizado,
         contraseña,
         tipo,
+        especialidad: tipo === 'Medico' ? especialidad.trim() : '',
+        matricula: tipo === 'Medico' ? matricula.trim() : '',
       };
 
       // Guardar el usuario junto con los anteriores
@@ -62,6 +101,8 @@ const RegisterScreen: React.FC = () => {
       setEmail('');
       setContraseña('');
       setTipo('Paciente');
+      setEspecialidad('');
+      setMatricula('');
 
     } catch (error) {
       console.error('Error al registrar usuario:', error);
@@ -84,6 +125,13 @@ const RegisterScreen: React.FC = () => {
             onChangeText={setNombre}      
             placeholder="Nombre de usuario"
             style={{ backgroundColor: '#e4e4e4', borderRadius: 10, padding: 15, marginBottom: 20}}/>
+          <Text style={styles.label}>DNI:</Text>
+          <TextInput
+            keyboardType="numeric"
+            value={dni}                
+            onChangeText={setDni}      
+            placeholder="DNI"
+            style={{ backgroundColor: '#e4e4e4', borderRadius: 10, padding: 15, marginBottom: 20}}/>
           <Text style={styles.label}>Email:</Text>
           <TextInput
             keyboardType="email-address"
@@ -99,13 +147,47 @@ const RegisterScreen: React.FC = () => {
             placeholder="Contraseña"
             style={{ backgroundColor: '#e4e4e4', borderRadius: 10, padding: 15, marginBottom: 25}}/>
           <Text style={styles.label}>Rol:</Text>
-          <Text>Seleccionaste: {tipo}</Text>
+          <Text style={{marginBottom:10}}>Seleccionaste: {tipo}</Text>
           <View style={styles.viewPicker}>
             <Picker itemStyle={styles.pickerItem} style={styles.picker} selectedValue={tipo} onValueChange={(itemValue) => setTipo(itemValue)}>          
               <Picker.Item label="Paciente" value="Paciente"/>
               <Picker.Item label="Medico" value="Medico"/>
             </Picker>
           </View>
+          {tipo === 'Medico' && (
+              <>
+                <Text style={{fontSize: 16, marginBottom: 8}}>Especialidad:</Text>
+                <Dropdown
+                  data={especialidades}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Buscar especialidad..."
+                  search
+                  searchPlaceholder="Escribí una especialidad"
+                  value={especialidad}
+                  onChange={item => setEspecialidad(item.value)}
+                  style={{
+                    backgroundColor: '#e4e4e4',
+                    borderRadius: 10,
+                    padding: 15,
+                    marginBottom: 20,
+                  }}
+                />
+                <Text style={styles.label}>Matrícula profesional:</Text>
+                <TextInput
+                  value={matricula}
+                  onChangeText={setMatricula}
+                  placeholder="Número de matrícula"
+                  keyboardType="numeric"
+                  style={{
+                    backgroundColor: '#e4e4e4',
+                    borderRadius: 10,
+                    padding: 15,
+                    marginBottom: 20,
+                  }}
+                />
+              </>
+            )}
           <TouchableOpacity style={[styles.botonEnviar,!puedeEnviar && styles.botonDeshabilitado]} onPress={registrarUsuario} disabled={!puedeEnviar}>
             <Text style={[styles.textoEnviar,!puedeEnviar && styles.textoDeshabilitado]}>Enviar</Text>
           </TouchableOpacity>
@@ -119,11 +201,11 @@ export default RegisterScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20, },
-  iconoContainer: { alignItems: 'center'},
+  iconoContainer: { alignItems: 'center', marginTop: 42},
   formContainer: {flex: 1, justifyContent: 'center'},
   title: { textAlign: 'center', fontSize: 19, fontWeight: '500', marginBottom: 5, marginTop: 20, color: '#004aad' },
   label: { fontSize: 16, marginBottom: 8 },
-  botonEnviar: {backgroundColor:'#2075e4',borderRadius: 10,padding:15, alignItems: 'center', marginBottom: 100, },
+  botonEnviar: {backgroundColor:'#2075e4',borderRadius: 10,padding:15, alignItems: 'center', marginBottom: 100},
   textoEnviar: {color: '#ffffff', fontSize: 16, fontWeight: 'bold'},
   textoDeshabilitado: {color: '#969696'},
   botonDeshabilitado: {backgroundColor: '#cccccc'},
