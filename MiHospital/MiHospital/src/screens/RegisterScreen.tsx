@@ -9,7 +9,15 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const RegisterScreen: React.FC = () => {
+type RegisterRouteProp = RouteProp<RootStackParamList, 'Register'>;
+type RegisterNavProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
+
+type Props = {
+  route: RegisterRouteProp;
+  navigation: RegisterNavProp;
+};
+
+const RegisterScreen: React.FC<Props> = ({navigation}) => {
   const especialidades = [
     { label: 'Cardiología', value: 'Cardiología' },
     { label: 'Cirugía general', value: 'Cirugía general' },
@@ -61,24 +69,21 @@ const RegisterScreen: React.FC = () => {
 
       const emailNormalizado = email.trim().toLowerCase();
 
-      // Recuperar los usuarios registrados
       const usuariosGuardados = await AsyncStorage.getItem('usuarios');
       const usuarios = usuariosGuardados
         ? JSON.parse(usuariosGuardados)
         : [];
 
-      // Verificar si el email ya existe
       const existeUsuario = usuarios.some(
-        (usuario: { email: string }) =>
-          usuario.email === emailNormalizado
+        (usuario: { id: string }) =>
+          usuario.id === dni.trim()
       );
 
       if (existeUsuario) {
-        Alert.alert('Error', 'Este email ya está registrado.');
+        Alert.alert('Error', 'Este DNI ya está registrado.');
         return;
       }
 
-      // Crear el nuevo usuario
       const nuevoUsuario = {
         id: dni.trim(),
         nombre: nombre.trim(),
@@ -89,20 +94,32 @@ const RegisterScreen: React.FC = () => {
         matricula: tipo === 'Medico' ? matricula.trim() : '',
       };
 
-      // Guardar el usuario junto con los anteriores
       usuarios.push(nuevoUsuario);
 
       await AsyncStorage.setItem('usuarios', JSON.stringify(usuarios));
 
+      await AsyncStorage.setItem('sesion',
+        JSON.stringify({
+          nombre: nombre,
+          dni: dni,
+          rol: tipo,
+        })
+      );
+
+      if (tipo === 'Paciente') {
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'HomePaciente',params: {nombre: nombre, dni: dni, rol: 'Paciente'}}]
+        });
+      } else if (tipo === 'Medico') {
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'HomeMedico',params: {nombre: nombre, dni: dni ,rol: 'Medico'}}]
+        });
+      }
+
       Alert.alert('Éxito', 'Usuario registrado correctamente.');
 
-      // Limpiar los campos
-      setNombre('');
-      setEmail('');
-      setContraseña('');
-      setTipo('Paciente');
-      setEspecialidad('');
-      setMatricula('');
 
     } catch (error) {
       console.error('Error al registrar usuario:', error);

@@ -4,23 +4,39 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { MedicoRootTabParamList } from '../../navigation/medicoTabNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {TurnosMedRootTabParamList} from '../../navigation/turnosMedNavigator';
+import ProxTurnosMedScreen from './Turnos/ProximosTurnosMedScreen';
+import TurnosPrevMedScreen from './Turnos/TurnosPreviosMedScreen';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
 type Props = BottomTabScreenProps<MedicoRootTabParamList, 'Turnos'>;
+const Tab = createMaterialTopTabNavigator<TurnosMedRootTabParamList>();
 
 const TurnosMedicoScreen: React.FC<Props> = ({ route }) => {
   const { nombre }  = route.params;
+  const { dni }  = route.params;
   return(
-    <ScrollView>
+    <View style={{flex: 1}}>
       <View style={styles.container}>
-        <Text style={styles.bienvenido}>¡Bienvenido a turnos {nombre}!</Text>
+        <Text style={styles.bienvenido}>Turnos de {nombre}</Text>
       </View>
-    </ScrollView>
+      <Tab.Navigator
+        screenOptions={{
+        tabBarActiveTintColor: '#004aad',
+        tabBarInactiveTintColor: '#777',
+      }}
+      >
+        <Tab.Screen name="ProxTurnos" component={ProxTurnosMedScreen} initialParams={{ nombre, dni }} options={{ title: 'Próximos turnos' }}/>
+        <Tab.Screen name="TurnosPrev" component={TurnosPrevMedScreen} initialParams={{ nombre, dni }} options={{ title: 'Turnos previos' }}/>
+      </Tab.Navigator>
+    </View>
   );
 };
 
 export default TurnosMedicoScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  bienvenido: { color: '#004aad', fontSize: 19, fontWeight: '500' },
+  container: { backgroundColor: '#ffffff', padding: 15},
+  bienvenido: { color: '#004aad', fontSize: 19, fontWeight: '500', textAlign:'center' },
 });

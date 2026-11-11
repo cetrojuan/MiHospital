@@ -67,6 +67,14 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
         return;
       }
 
+      await AsyncStorage.setItem('sesion',
+        JSON.stringify({
+          nombre: usuarioEncontrado.nombre,
+          dni: usuarioEncontrado.id,
+          rol: usuarioEncontrado.tipo,
+        })
+      );
+
       if (Rol === 'paciente') {
         navigation.reset({
           index: 0,

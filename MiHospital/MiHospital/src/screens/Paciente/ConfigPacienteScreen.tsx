@@ -4,16 +4,26 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { PacienteRootTabParamList } from '../../navigation/pacienteTabNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EditarDatosUsuario from '../../components/EditarDatosUsuario';
 
 type Props = BottomTabScreenProps<PacienteRootTabParamList, 'Configuracion'>;
 
 const ConfigPacienteScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { nombre }  = route.params;
+  const { nombre, dni }  = route.params;
+  const CerrarSesion = async () => {
+    try{
+      await AsyncStorage.removeItem('sesion');
+      navigation.getParent()?.reset({index: 0,routes: [{name: 'Home'}]})
+    }catch(error){
+      Alert.alert('Error','No se pudo cerrar sesión');
+    }
+  }
   return(
     <ScrollView>
       <View style={styles.container}>
-        <Text style={styles.bienvenido}>¡Bienvenido a Configuracion {nombre}!</Text>
-        <TouchableOpacity onPress={() => { navigation.getParent()?.reset({index: 0,routes: [{name: 'Home'}]})} }>
+        <Text style={styles.bienvenido}>Configuracion de {nombre} ⚙️</Text>
+        <EditarDatosUsuario dni={dni}/>
+        <TouchableOpacity onPress={CerrarSesion}>
           <Text style={styles.cerrarSesionBoton}>Cerrar Sesion</Text>
         </TouchableOpacity>
       </View>

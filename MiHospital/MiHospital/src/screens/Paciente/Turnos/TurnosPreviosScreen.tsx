@@ -4,14 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TurnosPacRootTabParamList } from '../../../navigation/turnosPacNavigator';
+import ListaTurnos from '../../../components/ListaTurnosPaciente';
 
 type Props = BottomTabScreenProps<TurnosPacRootTabParamList, 'TurnosPrev'>;
 
 const TurnosPreviosScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { nombre }  = route.params;
+  const { nombre, dni }  = route.params;
   return(
-    <ScrollView>
-    </ScrollView>
+    <View>
+      <ListaTurnos dni={dni} estado='ambos'/>
+    </View>
   );
 };
 

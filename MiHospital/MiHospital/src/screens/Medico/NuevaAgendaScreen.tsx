@@ -122,7 +122,7 @@ const CrearAgenga = async () => {
   return (
     <ScrollView>
       <View style={styles.container}>
-        <Text style={{fontSize:30, alignSelf:'center', fontWeight:'bold', color:'#004aad',marginTop:20, marginBottom:20}}>Nueva Agenda</Text>
+        <Text style={{fontSize:30, alignSelf:'center', fontWeight:'bold', color:'#004aad', marginBottom:20}}>Nueva Agenda</Text>
         <Text style={styles.label}>Días de atención:</Text>
           {diasSemana.map((dia) => {
             const seleccionado = diasSeleccionados.includes(dia);
@@ -181,14 +181,14 @@ const CrearAgenga = async () => {
 export default NuevaAgendaScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 40, marginTop: 30 },
+  container: { flex: 1, justifyContent: 'center', padding: 30 },
   title: { textAlign: 'center', fontSize: 19, fontWeight: '500', marginBottom: 5, marginTop: 20, color: '#004aad' },
   label: {fontSize: 20,marginBottom: 8, marginTop:20},
   labelTall: {fontSize:15, marginBottom:10},
   diaFila: {backgroundColor: '#e4e4e4',borderRadius: 10,padding: 10,marginBottom: 8,flexDirection: 'row',justifyContent: 'space-between',alignItems: 'center'},
   horaDropdown: {backgroundColor: '#e4e4e4',borderRadius: 10,paddingHorizontal: 15,height: 50,marginBottom: 20},
   dropdownLista: {borderRadius: 10},
-  botonEnviar: {backgroundColor:'#2075e4',borderRadius: 10,padding:15, alignItems: 'center', marginBottom: 100},
+  botonEnviar: {backgroundColor:'#2075e4',borderRadius: 10,padding:15, alignItems: 'center', marginBottom: 80, marginTop: 20},
   textoEnviar: {color: '#ffffff', fontSize: 16, fontWeight: 'bold'},
   textoDeshabilitado: {color: '#969696'},
   botonDeshabilitado: {backgroundColor: '#cccccc'},

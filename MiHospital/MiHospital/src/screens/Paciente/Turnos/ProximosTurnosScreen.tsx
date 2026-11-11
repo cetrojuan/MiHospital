@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TurnosPacRootTabParamList } from '../../../navigation/turnosPacNavigator';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types/navigation';
+import ListaTurnos from '../../../components/ListaTurnosPaciente';
 
 type Props = BottomTabScreenProps<TurnosPacRootTabParamList, 'ProxTurnos'>;
 
@@ -13,8 +14,7 @@ const ProximosTurnosScreen: React.FC<Props> = ({ route, navigation }) => {
   const { nombre, dni }  = route.params;
   return(
     <View style={{flex: 1}}>
-      <ScrollView style={{}}>
-      </ScrollView>
+      <ListaTurnos dni={dni} estado={'pendiente'}/>
       <TouchableOpacity style={styles.nuevoTurnoBoton} onPress={() => navigation.getParent()?.navigate('NuevoTurno', {nombre: nombre, dni: dni})}>
         <Text style={styles.nuevoTurno}>NUEVO TURNO</Text>
       </TouchableOpacity>

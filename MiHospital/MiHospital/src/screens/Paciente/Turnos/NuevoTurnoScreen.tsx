@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, Button, Image, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { StyleSheet, Text, View, Button, Image, TouchableOpacity, TextInput, Alert, Linking } from 'react-native';
 import { useState, useEffect } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
@@ -9,6 +9,51 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system/legacy';
+
+/* ----- Exportar Turno al Calendario de Google ----- */
+const agregarAGoogleCalendar = async (turno: any) => {
+  const fechaInicio = new Date(turno.dia);
+  const [horas, minutos] = turno.hora
+    .split(':')
+    .map(Number);
+
+  fechaInicio.setHours(horas, minutos, 0, 0);
+
+  const fechaFin = new Date(fechaInicio);
+  fechaFin.setMinutes(fechaFin.getMinutes() + 30);
+
+  // Google Calendar necesita las fechas en UTC.
+  const formatoFecha = (fecha: Date) =>
+    fecha.toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/\.\d{3}/, '');
+
+  const titulo = `Turno de ${turno.especialidad}`;
+  const descripcion =
+    `Profesional: ${turno.profesional ?? 'Sin especificar'}`;
+
+  const parametros = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: titulo,
+    dates: `${formatoFecha(fechaInicio)}/${formatoFecha(fechaFin)}`,
+    details: descripcion,
+    ctz: 'America/Argentina/Buenos_Aires',
+  });
+
+  const url =
+    `https://calendar.google.com/calendar/render?${parametros.toString()}`;
+
+  try {
+    await Linking.openURL(url);
+  } catch (error) {
+    Alert.alert(
+      'Aviso',
+      'No se pudo abrir Google Calendar.'
+    );
+  }
+};
 
 type NuevoTurnoRouteProp = RouteProp<RootStackParamList, 'NuevoTurno'>;
 type NuevoTurnoNavProp = NativeStackNavigationProp<RootStackParamList, 'NuevoTurno'>;
@@ -49,6 +94,7 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
   );
   const [fecha, setFecha] = useState(new Date());
 
+
   /* ----- Cargar Profesionales ----- */
   useEffect(() => {
     const cargarProfesionales = async () => {
@@ -72,6 +118,7 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
     };
     cargarProfesionales();
   }, []);
+
 
   /* ----- Cargar Agenda ----- */
   useEffect(() => {
@@ -101,12 +148,14 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
     cargarAgenda();
   }, [profesional]);
 
-  /* ----- Cargar Horarios al Forms ----- */
-  useEffect(() => {
-    setHora('');
 
-    if (!agenda) {
-      setHorariosDisponibles([]);
+/* ----- Cargar Horarios al Forms ----- */
+useEffect(() => {
+  const cargarHorarios = async () => {
+    setHora('');
+    setHorariosDisponibles([]);
+
+    if (!agenda || !profesional || !especialidad) {
       return;
     }
 
@@ -124,7 +173,6 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
     const trabajaEseDia = agenda.dias.includes(diaSeleccionado);
 
     if (!trabajaEseDia) {
-      setHorariosDisponibles([]);
       return;
     }
 
@@ -133,8 +181,34 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
       agenda.horaFin
     );
 
-    setHorariosDisponibles(horarios);
-  }, [agenda, fecha]);
+    try{
+      const turnosGuardados = await AsyncStorage.getItem('turnos');
+      const turnos = turnosGuardados
+        ? JSON.parse(turnosGuardados)
+        : [];
+
+      const turnosEncontrados = turnos.filter(
+        (item: {profesionalDni: string;especialidad: string;dia: string;estado: string;}) =>
+          item.profesionalDni === profesional &&
+          item.especialidad === especialidad &&
+          new Date(item.dia).toDateString() === fecha.toDateString() &&
+          item.estado === 'pendiente' || item.estado === 'atendido'
+      );
+
+      const horariosLibres = horarios.filter(
+        (horario) => !turnosEncontrados.some((turno: { hora: string }) => turno.hora === horario)
+      );
+
+      setHorariosDisponibles(horariosLibres);
+
+    }catch(error){
+      Alert.alert('Error','No se pudieron comprobar los turnos existentes.');
+    }
+  };
+
+  cargarHorarios();
+}, [agenda, fecha, profesional, especialidad]);
+
 
   /* ----- Generar Horarios ----- */
   const generarHorarios = (horaInicio: string, horaFin: string) => {
@@ -169,6 +243,8 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
     hora !== '' 
     ;
 
+
+  /* ----- Pedir Turno ----- */  
   const CrearTurno = async () => {
     try{
       if (!especialidad || !profesional || !hora ) {
@@ -181,21 +257,56 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
         ? JSON.parse(turnosGuardados)
         : [];
 
+      // const nuevoId = turnos.length > 0
+      // ? Math.max(...turnos.map((turno: { id: number }) => turno.id)) + 1
+      // : 1;
+
+      const profesionalNombre = profesionales.find(
+        (profe) => profe.id === profesional
+      );
+
       const nuevoTurno= {
-        id: dni.trim(),
+        id: turnos.length + 1,
+        pacienteDni: dni.trim(),
         paciente: nombre,
         especialidad: especialidad,
-        profesional: profesional,
+        profesionalDni: profesional,
+        profesional: profesionalNombre?.nombre,
         dia: fecha,
-        hora: hora
+        hora: hora,
+        estado: 'pendiente'
       };
 
       turnos.push(nuevoTurno);
 
       await AsyncStorage.setItem('turnos', JSON.stringify(turnos));
 
-      Alert.alert('Éxito', 'El Turno se creó correctamente.');
-      navigation.goBack();
+      Alert.alert(
+        'Éxito',
+        'El turno se creó correctamente.',
+        [
+          {
+            text: 'Más tarde',
+            onPress: () => navigation.goBack(),
+          },
+          {
+            text: 'Agregar al calendario',
+            onPress: async () => {
+              try {
+                await agregarAGoogleCalendar(nuevoTurno);
+              } catch (error) {
+                console.error('Error al generar el calendario:', error);
+                Alert.alert(
+                  'Aviso',
+                  'El turno se guardó, pero no se pudo abrir el calendario.'
+                );
+              } finally {
+                navigation.goBack();
+              }
+            },
+          },
+        ]
+      );
 
     }catch (error) {
       Alert.alert('Error', 'No se pudo crear el Turno.');
@@ -205,6 +316,7 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Text style={{fontSize:30, alignSelf:'center', fontWeight:'bold', color:'#004aad', marginBottom:40}}>Nuevo Turno</Text>
       <Text style={{fontSize: 16, marginBottom: 8}}>Especialidad:</Text>
         <Dropdown
           data={especialidades}
@@ -284,9 +396,9 @@ const NuevoTurnoScreen: React.FC<Props> = ({ route, navigation }) => {
 export default NuevoTurnoScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  title: { textAlign: 'center', fontSize: 19, fontWeight: '500', marginBottom: 5, marginTop: 20, color: '#004aad' },
-  botonEnviar: {backgroundColor:'#2075e4',borderRadius: 10,padding:15, alignItems: 'center', marginBottom: 100},
+  container: { flex: 1, justifyContent: 'center', padding: 30 },
+  title: { textAlign: 'center', fontSize: 19, fontWeight: '500', marginBottom: 10, marginTop: 20, color: '#004aad' },
+  botonEnviar: {backgroundColor:'#2075e4',borderRadius: 10,padding:15, alignItems: 'center', marginBottom: 100, marginTop:15},
   textoEnviar: {color: '#ffffff', fontSize: 16, fontWeight: 'bold'},
   textoDeshabilitado: {color: '#969696'},
   botonDeshabilitado: {backgroundColor: '#cccccc'},
